@@ -1,0 +1,26 @@
+{
+	"name": "property_invest_assistant",
+	"version": "1.0.0",
+	"description": "Property Investment Assistant",
+	"main": "index.js",
+	"author": {
+		"name": "Moataz Adel",
+		"email": "mo3tz3adel@gmail.com",
+		"url": "https://www.linkedin.com/in/moataz-adel/"
+	},
+	"scripts": {
+		"dev": "nodemon index.js"
+	},
+	"dependencies": {
+		"bcrypt": "^6.0.0",
+		"cors": "^2.8.5",
+		"dotenv": "^17.2.3",
+		"express": "^5.1.0",
+		"jsonwebtoken": "^9.0.2",
+		"module-alias": "^2.2.3",
+		"mongoose": "^8.18.3"
+	},
+	"devDependencies": {
+		"nodemon": "^3.1.10"
+	}
+}
