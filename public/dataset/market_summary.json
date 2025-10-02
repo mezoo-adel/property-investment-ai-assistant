@@ -1,0 +1,23 @@
+{
+  "total_properties": 426,
+  "average_price_per_sqft": 2534,
+  "average_rental_yield": 6.3,
+  "total_market_value_aed": 3090722712,
+  "property_type_distribution": {
+    "Apartment": 146,
+    "Villa": 142,
+    "Townhouse": 138
+  },
+  "top_areas_by_volume": {
+    "Jumeirah Village Circle": 53,
+    "Business Bay": 46,
+    "Dubai Marina": 53,
+    "Downtown Dubai": 53,
+    "Dubai Residence Complex": 58,
+    "The Valley": 49,
+    "Palm Jumeirah": 59,
+    "Dubai Hills Estate": 55
+  },
+  "generated_date": "2025-09-30",
+  "data_source": "AI Investment Assistant - Dubai Real Estate Dataset"
+}
