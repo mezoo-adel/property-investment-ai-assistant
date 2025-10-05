@@ -12,6 +12,7 @@
 		"@": "./"
 	},
 	"scripts": {
+		"build:css": "./node_modules/.bin/tailwindcss -i ./public/css/input.css -o ./public/css/output.css",
 		"dev": "nodemon index.js"
 	},
 	"dependencies": {
@@ -20,12 +21,15 @@
 		"dotenv": "^17.2.3",
 		"express": "^5.1.0",
 		"jsonwebtoken": "^9.0.2",
+		"marked": "^16.3.0",
 		"module-alias": "^2.2.3",
 		"mongodb-client-encryption": "^6.5.0",
 		"mongoose": "^8.18.3",
 		"openai": "^6.1.0"
 	},
 	"devDependencies": {
-		"nodemon": "^3.1.10"
+		"autoprefixer": "^10.4.21",
+		"nodemon": "^3.1.10",
+		"tailwindcss": "^4.1.14"
 	}
 }
