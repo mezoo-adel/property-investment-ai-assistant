@@ -7,4 +7,4 @@ const Schema = new mongoose.Schema({
   is_active: { type: Boolean, default: true },
 });
 
-module.exports = mongoose.model("AiModel", Schema);
+module.exports = mongoose.model("AiModel", Schema, "ai_models");

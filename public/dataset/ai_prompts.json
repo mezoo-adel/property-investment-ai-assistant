@@ -1,0 +1,20 @@
+{
+  "find_top_properties": [
+    {
+      "role": "user",
+      "content": "I want to find suitable properties with these criteria: areas = $AREAS, property type = $PROPERTY_TYPE, maximum budget = AED $MAX_BUDGET, minimum bedrooms = $MIN_BEDROOMS, minimum rental yield = $MIN_YIELD%. Please find and rank the top 5 properties."
+    }
+  ],
+  "market_summary": [
+    {
+      "role": "user",
+      "content": "Summarize market from file $SUMMARY_FILE and list top 5 areas by volume and yield."
+    }
+  ],
+  "generate_report": [
+    {
+      "role": "user",
+      "content": "Generate investor report: areas $AREAS, budget <= $MAX_BUDGET, min yield $MIN_YIELD%. Include top picks, risks, 5-year projection."
+    }
+  ]
+}

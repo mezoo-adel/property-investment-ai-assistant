@@ -5,5 +5,6 @@ router.get("/", (req, res) => {
 });
 
 router.use("/ai-models", require("./ai-models"));
+router.use("/prompts", require("./prompts"));
 
 module.exports = router;
