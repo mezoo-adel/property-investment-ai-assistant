@@ -88,6 +88,16 @@ const findTopProperties = async (req, res) => {
     console.log("OpenAI API Key exists:", !!process.env.OPENAI_API_KEY);
     console.log("OpenAI Model:", process.env.OPENAI_MODEL);
 
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.error("OpenAI API key not configured");
+      return res.status(500).json({
+        success: false,
+        message: "OpenAI API key not configured. Please check your environment variables.",
+        error: "Missing API key"
+      });
+    }
+
     const client = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
@@ -95,12 +105,13 @@ const findTopProperties = async (req, res) => {
     console.log("Starting OpenAI API call...");
 
     try {
-      const completion = await client.responses.create({
-        input,
-        model: process.env.OPENAI_MODEL,
+      const completion = await client.chat.completions.create({
+        model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
+        messages: input,
+        stream: false,
       });
 
-      const content = completion.output_text || "No response generated";
+      const content = completion.choices[0]?.message?.content || "No response generated";
 
       console.log("AI analysis completed successfully");
 

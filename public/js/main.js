@@ -39,6 +39,50 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentMessageIndex = 0;
   let loadingInterval = null;
 
+  // Format property analysis content for better readability
+  const formatPropertyAnalysis = (content) => {
+    if (!content) return '<p>No analysis content received</p>';
+    
+    // Split content into sections and format
+    let formattedContent = content
+      // Add line breaks after periods followed by capital letters (new sentences)
+      .replace(/\.\s+([A-Z])/g, '.<br><br>$1')
+      // Format property IDs and codes
+      .replace(/(DXB\d+)/g, '<strong class="text-blue-600">$1</strong>')
+      // Format prices in AED
+      .replace(/AED\s+([\d,]+)/g, '<span class="font-semibold text-green-600">AED $1</span>')
+      // Format percentages
+      .replace(/(\d+\.?\d*%)/g, '<span class="font-semibold text-purple-600">$1</span>')
+      // Format property areas/locations
+      .replace(/—\s*([A-Za-z\s]+?)(?=\s|$)/g, '— <em class="text-indigo-600">$1</em>')
+      // Format investment scores
+      .replace(/Investment score:\s*([\d.]+)/g, 'Investment score: <strong class="text-orange-600">$1</strong>')
+      // Format yields
+      .replace(/Yield:\s*([\d.]+%)/g, 'Yield: <strong class="text-green-600">$1</strong>')
+      // Format completion years
+      .replace(/Completion:\s*(\d{4})/g, 'Completion: <strong>$1</strong>')
+      // Add spacing around main sections
+      .replace(/(Top \d+ selections|Portfolio summary|Investment briefing|Ranking method)/g, '<h3 class="text-lg font-bold text-gray-800 mt-6 mb-3">$1</h3>')
+      // Format strengths and risks
+      .replace(/Strengths:/g, '<strong class="text-green-700">Strengths:</strong>')
+      .replace(/Risks:/g, '<strong class="text-red-700">Risks:</strong>')
+      // Format price ranges and specifications
+      .replace(/(\d+\s*BR,?\s*\d+\s*BA)/g, '<span class="bg-gray-100 px-2 py-1 rounded text-sm">$1</span>')
+      .replace(/(\d+,?\d*\s*sqft)/g, '<span class="bg-blue-100 px-2 py-1 rounded text-sm">$1</span>');
+
+    // Wrap in proper HTML structure
+    return `
+      <div class="property-analysis">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 md:p-6 rounded-lg border border-blue-200 mb-4 md:mb-6">
+          <h2 class="text-lg md:text-2xl font-bold text-gray-800 mb-3 md:mb-4">🏢 Property Investment Analysis</h2>
+          <div class="text-gray-700 leading-relaxed space-y-2 md:space-y-4 text-sm md:text-base">
+            ${formattedContent}
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
   // Fetch data for form controls
   const populateFormControls = async () => {
     try {
@@ -96,29 +140,87 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // Clear field error
+  const clearFieldError = (fieldId) => {
+    const errorDiv = document.getElementById(`${fieldId}-error`);
+    const field = document.getElementById(fieldId);
+    if (errorDiv) {
+      errorDiv.classList.add('hidden');
+      errorDiv.textContent = '';
+    }
+    if (field) {
+      field.classList.remove('border-red-500');
+      field.classList.add('border-gray-300');
+    }
+  };
+
+  // Show field error
+  const showFieldError = (fieldId, message) => {
+    const errorDiv = document.getElementById(`${fieldId}-error`);
+    const field = document.getElementById(fieldId);
+    if (errorDiv) {
+      errorDiv.classList.remove('hidden');
+      errorDiv.textContent = message;
+    }
+    if (field) {
+      field.classList.add('border-red-500');
+      field.classList.remove('border-gray-300');
+    }
+  };
+
+  // Validate individual field
+  const validateField = (fieldId) => {
+    clearFieldError(fieldId);
+    const field = document.getElementById(fieldId);
+    let isValid = true;
+
+    switch (fieldId) {
+      case 'areas':
+        if (!field.value || field.value.trim() === '') {
+          showFieldError(fieldId, 'Please select an area');
+          isValid = false;
+        }
+        break;
+      
+      case 'property_type':
+        if (!field.value || field.value.trim() === '') {
+          showFieldError(fieldId, 'Please select a property type');
+          isValid = false;
+        }
+        break;
+      
+      case 'min_bedrooms':
+        const bedrooms = parseInt(field.value);
+        if (isNaN(bedrooms) || bedrooms < 0 || bedrooms > 10) {
+          showFieldError(fieldId, 'Please enter a valid number of bedrooms (0-10)');
+          isValid = false;
+        }
+        break;
+      
+      case 'min_yield':
+        const yield_ = parseFloat(field.value);
+        if (isNaN(yield_) || yield_ < 0 || yield_ > 100) {
+          showFieldError(fieldId, 'Please enter a valid yield percentage (0-100)');
+          isValid = false;
+        }
+        break;
+    }
+
+    return isValid;
+  };
+
   // Form validation function
   const validateForm = () => {
-    const errors = [];
+    const fields = ['areas', 'property_type', 'min_bedrooms', 'min_yield'];
+    let allValid = true;
 
-    if (!areasSelect.value) {
-      errors.push("Please select an area");
-    }
+    fields.forEach(fieldId => {
+      if (!validateField(fieldId)) {
+        allValid = false;
+      }
+    });
 
-    if (!propertyTypeSelect.value) {
-      errors.push("Please select a property type");
-    }
-
-    const minBedrooms = parseInt(document.getElementById("min_bedrooms").value);
-    if (isNaN(minBedrooms) || minBedrooms < 0) {
-      errors.push("Please enter a valid number of bedrooms (minimum 0)");
-    }
-
-    const minYield = parseFloat(document.getElementById("min_yield").value);
-    if (isNaN(minYield) || minYield < 0 || minYield > 100) {
-      errors.push("Please enter a valid yield percentage (0-100)");
-    }
-
-    return errors;
+    return allValid;
   };
 
   // Enhanced loading state management
@@ -173,9 +275,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Show analysis statistics
         const statsHtml = `
-                    <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <h3 class="text-lg font-semibold text-blue-800 mb-2">Analysis Summary</h3>
-                        <div class="grid grid-cols-2 gap-4 text-sm text-blue-700">
+                    <div class="mb-4 p-3 md:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h3 class="text-base md:text-lg font-semibold text-blue-800 mb-2">Analysis Summary</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4 text-xs md:text-sm text-blue-700">
                             <div><strong>Properties Analyzed:</strong> ${
                               data.propertiesAnalyzed || 0
                             }</div>
@@ -186,35 +288,37 @@ document.addEventListener("DOMContentLoaded", () => {
                         ${
                           data.filters
                             ? `
-                            <div class="mt-3 text-sm text-blue-600">
+                            <div class="mt-3 text-xs md:text-sm text-blue-600">
                                 <strong>Applied Filters:</strong>
+                                <div class="mt-1 flex flex-wrap gap-1">
                                 ${
                                   data.filters.areas
-                                    ? `Area: ${data.filters.areas}, `
+                                    ? `<span class="bg-blue-100 px-2 py-1 rounded text-xs">Area: ${data.filters.areas}</span>`
                                     : ""
                                 }
                                 ${
                                   data.filters.property_type
-                                    ? `Type: ${data.filters.property_type}, `
+                                    ? `<span class="bg-blue-100 px-2 py-1 rounded text-xs">Type: ${data.filters.property_type}</span>`
                                     : ""
                                 }
                                 ${
                                   data.filters.max_budget
-                                    ? `Max Budget: ${Number(
+                                    ? `<span class="bg-blue-100 px-2 py-1 rounded text-xs">Budget: ${Number(
                                         data.filters.max_budget,
-                                      ).toLocaleString()} AED, `
+                                      ).toLocaleString()} AED</span>`
                                     : ""
                                 }
                                 ${
                                   data.filters.min_bedrooms
-                                    ? `Min Bedrooms: ${data.filters.min_bedrooms}, `
+                                    ? `<span class="bg-blue-100 px-2 py-1 rounded text-xs">Bedrooms: ${data.filters.min_bedrooms}+</span>`
                                     : ""
                                 }
                                 ${
                                   data.filters.min_yield
-                                    ? `Min Yield: ${data.filters.min_yield}%`
+                                    ? `<span class="bg-blue-100 px-2 py-1 rounded text-xs">Yield: ${data.filters.min_yield}%+</span>`
                                     : ""
                                 }
+                                </div>
                             </div>
                         `
                             : ""
@@ -222,18 +326,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 `;
 
-        // Render markdown content
-        try {
-          const htmlContent = marked.parse(content);
-          resultsDiv.innerHTML = `<div class="prose max-w-none">${statsHtml}${htmlContent}</div>`;
-        } catch (markdownError) {
-          // Fallback to plain text if markdown parsing fails
-          console.warn(
-            "Markdown parsing failed, using plain text:",
-            markdownError,
-          );
-          resultsDiv.innerHTML = `<div class="prose max-w-none">${statsHtml}<pre class="whitespace-pre-wrap">${content}</pre></div>`;
-        }
+        // Format and render content
+        const formattedContent = formatPropertyAnalysis(content);
+        resultsDiv.innerHTML = `<div class="prose max-w-none">${statsHtml}${formattedContent}</div>`;
 
         console.log("Analysis displayed successfully");
       } else {
@@ -248,14 +343,38 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // Add real-time validation event listeners
+  const addValidationListeners = () => {
+    // Validate on blur (when user leaves field)
+    ['areas', 'property_type', 'min_bedrooms', 'min_yield'].forEach(fieldId => {
+      const field = document.getElementById(fieldId);
+      if (field) {
+        field.addEventListener('blur', () => validateField(fieldId));
+        field.addEventListener('change', () => validateField(fieldId));
+      }
+    });
+
+    // Clear errors on focus
+    ['areas', 'property_type', 'min_bedrooms', 'min_yield'].forEach(fieldId => {
+      const field = document.getElementById(fieldId);
+      if (field) {
+        field.addEventListener('focus', () => clearFieldError(fieldId));
+      }
+    });
+  };
+
   // Handle form submission
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     // Validate form
-    const errors = validateForm();
-    if (errors.length > 0) {
-      alert("Please fix the following errors:\n\n" + errors.join("\n"));
+    if (!validateForm()) {
+      // Scroll to first error field
+      const firstErrorField = document.querySelector('.border-red-500');
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstErrorField.focus();
+      }
       return;
     }
 
@@ -304,4 +423,5 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   populateFormControls();
+  addValidationListeners();
 });
